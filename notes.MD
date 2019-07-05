@@ -22,6 +22,7 @@ Latest iteration
 - Promise-based
 - Async
 - State diagrams (? example images?)
+- YAML? Why?
 - TypeScript, Redux... anything else new?
 
 Questions
