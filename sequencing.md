@@ -42,6 +42,44 @@ In contrast with most C++ development, web application development offers a matu
 
 We believed it was time to apply some of these lessons to make our video booths easier to develop and maintain.
 
-Our most recent iteration focussed on two main areas of improvement:
+Our most recent iteration focussed on four main areas of improvement:
 1. **Break up the system into smaller, focussed pieces.** Let applications be focussed on a single area of responsibility, as far as possible.
-1. ** 
+1. **Standardise communication protocols.** Use [websockets](https://en.wikipedia.org/wiki/WebSocket) for communication in the system, as far as practical, whether between applications on the same machine or over a real network. Websockets also have the advantage of allowing easy two-way communication.
+1. **Centralise state management.** Let a single Node Server direct the most important events and mode transitions in the system. Remove state and hardcoded logic (decision-making) from other components as far as possible.
+1. **Separate configuration (what should happen) from the engine (how the sequencing, etc. should be applied).** Make it possible for non-coders to change how the system behaves to a large extent, without involving coders and without risking errors and undetermined behaviour.
+
+## How we did it
+### Breaking things up
+We "dumbed down" our C++/Cinder "Snapshot" application a lot. We kept it as near to "stateless" as we could manage. The Snapshot application would only trigger its audio and video capturing on command from the server, and return messages about status (capture complete) and locations of processed assets, etc.
+
+We pulled functionality such as **light control and sensor data** into separate applications: in this case, another Cinder app for lighting control, small Node servers for the conductive touch "button" input, an Electron app for "frontend" text display on screen and a website running in a browser on an iPad (for user registration). We even had a small server that was responsible only for listening to button events from a "reset" button, to trigger a system reboot. 
+
+### Standardising communication
+All of these pieces of software listed above communicated to a central "control" server via websocket connections.
+
+### Centralising state management
+Our team implemented a [Redux](https://redux.js.org/) state management container on the control server. This makes the system extremely testable and much easier to debug. The software was hardened further by the use of [TypeScript](https://www.typescriptlang.org/).
+
+### Easy (re)configuration
+We put multi-region / multi-language "content" (in this case, on-screen prompts and references to voice-over clips) in a [YAML](https://yaml.org/) file: easy to read and edit, even for non-coders.
+
+The actual "sequencing" behaviour was put into a separate JSON file, which was essentially a list of "tasks" defining the behaviour of the booth. For example, a task might specify that a text prompt should go up on the display (with a reference to the correct section in the content file), and a sound play. Or it could specify that a 5 second audio clip should be recorded. Or a 15 second video clip. Lighting animations and all aspects of timing could be changed without modifying any code in the server (or anywhere else in the system).
+
+To actually generate and modify the JSON file, **we created a web-based editor**, which allowed designers, producers, creatives (non programmers) to build out a sequence, modify tasks and change their order without having to touch the actual data file directly.
+
+The "engine" to run this sequence made use of a newly-standardised (but very mature) feature of JavaScript, [Promises](https://developers.google.com/web/fundamentals/primers/promises). The sequence array would be parsed and then queued up, allowing for different methods of "resolving" each task, e.g. a condition was met (a user pushed the button when prompted) or a timeout completed.
+
+The result was a flexible and reliable sequencer that allowed designers to focus on content and timing, while coders could focus on stability, performance and functionality. And these areas of responsibility could be managed largely independently and in parallel.
+
+## The conclusion
+We ended up with a video booth system that was exceptionally stable, easier to test and largely immune to the kinds of bugs we used to see in earlier iterations. 
+
+It was also much easier (and faster, and less risky) to make all kinds of changes to the experience sequence without having to write code.
+
+## What's next
+A few improvements we can think of, which we may try to tackle in the future:
+- make the sequencing system more flexible, in terms of the types of tasks that can be set up
+- a more "visual" (less form-based) layout for the editor
+- use [monorepos](https://en.wikipedia.org/wiki/Monorepo) to consolidate the disparate parts of the system for version control and deployment
+- apply more strict typing (and more extensive use of [interfaces](https://www.typescriptlang.org/docs/handbook/interfaces.html)) for TypeScript, especially on the server side
+- allow for more sophisticated non-linear flow, e.g. branching, in the sequencer
