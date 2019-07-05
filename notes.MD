@@ -26,7 +26,8 @@ Latest iteration
 - TypeScript, Redux... anything else new?
 
 Questions
-- Was the timeline necessarily linear? Could it incorporate any kind of branching?
+- What problems or concerns were you trying to address by approaching the photobooth this way?
 - Was "timeline editor" built? Was it used?
 - Images available (e.g. state diagrams or anything else used for design stage?)
+- Was the timeline necessarily linear? Could it incorporate any kind of branching?
 - Future improvements?
