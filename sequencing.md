@@ -33,7 +33,7 @@ These difficulties had various, somewhat related root causes:
 - State and logic resided largely in the "Snapshot" (C++, Cinder) application, but these concerns were also handled in some other components including Node servers written in JavaScript
 - Light control (via ArtNet/DMX) and sensor control (via serial/USB) was sometimes incorporated into the Snapshot application itself, but sometimes these were put into the same monolithic Node server where that seemed "easier" to implement
 - Communication was typically done with OSC between Node and Cinder apps, because OSC communication is easy to do in Cinder but Websocket communication required third party libraries
-- Output on screen (video playback) was often often driven by the snapshot application, too 
+- Output on screen (video playback) was often often driven by the snapshot application, often implying that the same application needed to play back video and record video at the same time
 
 The common themes above: a fuzzy, decentralised approach to state management, and a confusing mix of commmunication protocols being used between different parts of the system.
 
